@@ -8,6 +8,7 @@
   background-size: cover;
   background-position: center;
   margin: 0 29px 0 0;
+  transition: filter 0.3s;
 }
 
 @media screen and (max-width: 740px) {
@@ -20,4 +21,32 @@
   .profile__image {
     margin-right: 0;
   }
+}
+
+.profile__avatar-container {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.profile__avatar-edit-button {
+  position: absolute;
+  top: 50%;
+  left: 45%;
+  transform: translate(-50%, -50%);
+  width: 26px;
+  height: 26px;
+  background: url('../../../images/edit-icon.svg') center/contain no-repeat;
+  border: none; 
+  background-color: transparent;
+  opacity: 0;
+  transition: opacity 0.3s;
+  cursor: pointer;
+}
+
+.profile__avatar-container:hover .profile__image {
+  filter: brightness(50%);
+}
+.profile__avatar-container:hover .profile__avatar-edit-button {
+  opacity: 1;
 }
