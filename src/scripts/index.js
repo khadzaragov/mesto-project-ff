@@ -7,9 +7,6 @@ import {
   getInitialCards,
   editProfile,
   addCard,
-  addLike,
-  removeLike,
-  deleteCard,
   updateAvatar
 } from './api.js';
 
@@ -30,7 +27,7 @@ const profileDescription = document.querySelector('.profile__description');
 const profileImage = document.querySelector('.profile__image');
 const placesList = document.querySelector('.places__list');
 
-// Попап "Редактировать профиль"
+// Попап Редактировать профиль
 const editProfileButton = document.querySelector('.profile__edit-button');
 const popupEditProfile = document.querySelector('.popup_type_edit');
 const closeEditProfilePopupButton = popupEditProfile.querySelector('.popup__close');
@@ -38,7 +35,7 @@ const formEditProfile = popupEditProfile.querySelector('form');
 const nameInput = formEditProfile.querySelector('input[name="name"]');
 const descriptionInput = formEditProfile.querySelector('input[name="description"]');
 
-// Попап "Новое место"
+// Попап Новое место
 const addCardButton = document.querySelector('.profile__add-button');
 const popupNewCard = document.querySelector('.popup_type_new-card');
 const closeNewCardPopupButton = popupNewCard.querySelector('.popup__close');
@@ -46,18 +43,19 @@ const formNewPlace = popupNewCard.querySelector('form');
 const placeNameInput = formNewPlace.querySelector('input[name="place-name"]');
 const linkInput = formNewPlace.querySelector('input[name="link"]');
 
-// Попап "Просмотр картинки"
+// Попап Просмотр картинки
 const popupImage = document.querySelector('.popup_type_image');
 const closeImagePopupButton = popupImage.querySelector('.popup__close');
+const popupImageElement = popupImage.querySelector('.popup__image');
+const popupCaptionElement = popupImage.querySelector('.popup__caption');
 
-// Попап "Обновить аватар"
+// Попап Обновить аватар
 const avatarEditButton = document.querySelector('.profile__avatar-edit-button');
 const popupAvatar = document.querySelector('.popup_type_avatar');
 const closeAvatarPopupButton = popupAvatar.querySelector('.popup__close');
 const formAvatar = popupAvatar.querySelector('.popup__form');
 const avatarLinkInput = formAvatar.querySelector('#avatar-link');
 
-// Переменная для userId
 let currentUserId = null;
 
 // Загрузка пользователя и карточек
@@ -70,6 +68,7 @@ Promise.all([getUserInfo(), getInitialCards()])
     profileDescription.textContent = userData.about;
     profileImage.style.backgroundImage = `url("${userData.avatar}")`;
 
+    // Отрисовываем карточки
     cards.forEach((card) => {
       renderCard(card);
     });
@@ -84,7 +83,6 @@ function openEditProfilePopup() {
   descriptionInput.value = profileDescription.textContent;
   clearValidation(formEditProfile, validationConfig);
 
-  // Активируем кнопку сабмита, если форма валидна
   if (formEditProfile.checkValidity()) {
     const button = formEditProfile.querySelector(validationConfig.submitButtonSelector);
     button.classList.remove(validationConfig.inactiveButtonClass);
@@ -122,64 +120,17 @@ editProfileButton.addEventListener('click', openEditProfilePopup);
 closeEditProfilePopupButton.addEventListener('click', closeEditProfilePopup);
 formEditProfile.addEventListener('submit', handleEditProfileFormSubmit);
 
-// Логика карточек
+// Открытие полноразмерной картинки
 function handleCardClick(cardData) {
-  const popupImageElement = popupImage.querySelector('.popup__image');
-  const popupCaption = popupImage.querySelector('.popup__caption');
   popupImageElement.src = cardData.link;
   popupImageElement.alt = cardData.name;
-  popupCaption.textContent = cardData.name;
+  popupCaptionElement.textContent = cardData.name;
   openPopup(popupImage);
 }
 
-/**
- * Удаление карточки с сервера + из DOM
- * @param {HTMLElement} cardElement
- * @param {Object} cardData
- */
-function handleDeleteClick(cardElement, cardData) {
-  deleteCard(cardData._id)
-    .then(() => {
-      cardElement.remove();
-    })
-    .catch((err) => {
-      console.log('Ошибка при удалении карточки:', err);
-    });
-}
-
-
-function handleLikeClick(evt, cardData, cardLikeButton, cardLikeCount) {
-  const isLiked = cardLikeButton.classList.contains('card__like-button_is-active');
-
-  if (!isLiked) {
-    addLike(cardData._id)
-      .then((updatedCard) => {
-        cardLikeButton.classList.add('card__like-button_is-active');
-        cardLikeCount.textContent = updatedCard.likes.length;
-      })
-      .catch((err) => {
-        console.log('Ошибка при постановке лайка:', err);
-      });
-  } else {
-    removeLike(cardData._id)
-      .then((updatedCard) => {
-        cardLikeButton.classList.remove('card__like-button_is-active');
-        cardLikeCount.textContent = updatedCard.likes.length;
-      })
-      .catch((err) => {
-        console.log('Ошибка при снятии лайка:', err);
-      });
-  }
-}
-
+// Рендер карточки
 function renderCard(cardData) {
-  const cardElement = createCard(
-    cardData,
-    currentUserId,
-    handleCardClick,
-    handleDeleteClick,
-    handleLikeClick
-  );
+  const cardElement = createCard(cardData, currentUserId, handleCardClick);
   placesList.prepend(cardElement);
 }
 
@@ -220,7 +171,7 @@ addCardButton.addEventListener('click', openNewCardPopup);
 closeNewCardPopupButton.addEventListener('click', closeNewCardPopup);
 formNewPlace.addEventListener('submit', handleNewPlaceFormSubmit);
 
-// Попап с изображением
+// Закрытие полноразмерного изображения
 function closeImagePopup() {
   closePopup(popupImage);
 }
@@ -236,7 +187,7 @@ popups.forEach((popup) => {
   });
 });
 
-// Попап "Обновить аватар"
+// Обновление аватара
 function openAvatarPopup() {
   formAvatar.reset();
   clearValidation(formAvatar, validationConfig);
