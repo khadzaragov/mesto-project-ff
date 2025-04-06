@@ -1,7 +1,17 @@
 
-import { createCard } from './card.js';
-import { openPopup, closePopup } from './modal.js';
-import { enableValidation, clearValidation } from './validation.js';
+import {
+  createCard,
+  handleDeleteCard,
+  handleLikeCard
+} from './card.js';
+import {
+  openPopup,
+  closePopup
+} from './modal.js';
+import {
+  enableValidation,
+  clearValidation
+} from './validation.js';
 import {
   getUserInfo,
   getInitialCards,
@@ -56,21 +66,21 @@ const closeAvatarPopupButton = popupAvatar.querySelector('.popup__close');
 const formAvatar = popupAvatar.querySelector('.popup__form');
 const avatarLinkInput = formAvatar.querySelector('#avatar-link');
 
+// Глобальная переменная
 let currentUserId = null;
 
-// Загрузка пользователя и карточек
+// Загрузка пользователя
 Promise.all([getUserInfo(), getInitialCards()])
   .then(([userData, cards]) => {
     currentUserId = userData._id;
 
-    // Заполняем профиль
     profileTitle.textContent = userData.name;
     profileDescription.textContent = userData.about;
     profileImage.style.backgroundImage = `url("${userData.avatar}")`;
 
     // Отрисовываем карточки
-    cards.forEach((card) => {
-      renderCard(card);
+    cards.forEach((cardData) => {
+      renderCard(cardData);
     });
   })
   .catch((err) => {
@@ -99,8 +109,8 @@ function closeEditProfilePopup() {
 
 function handleEditProfileFormSubmit(evt) {
   evt.preventDefault();
-  const buttonSubmit = formEditProfile.querySelector(validationConfig.submitButtonSelector);
-  buttonSubmit.textContent = 'Сохранение...';
+  const submitButton = formEditProfile.querySelector(validationConfig.submitButtonSelector);
+  submitButton.textContent = 'Сохранение...';
 
   editProfile(nameInput.value, descriptionInput.value)
     .then((updatedUser) => {
@@ -112,7 +122,7 @@ function handleEditProfileFormSubmit(evt) {
       console.log('Ошибка при редактировании профиля:', err);
     })
     .finally(() => {
-      buttonSubmit.textContent = 'Сохранить';
+      submitButton.textContent = 'Сохранить';
     });
 }
 
@@ -120,7 +130,7 @@ editProfileButton.addEventListener('click', openEditProfilePopup);
 closeEditProfilePopupButton.addEventListener('click', closeEditProfilePopup);
 formEditProfile.addEventListener('submit', handleEditProfileFormSubmit);
 
-// Открытие полноразмерной картинки
+// Открытие картинки
 function handleCardClick(cardData) {
   popupImageElement.src = cardData.link;
   popupImageElement.alt = cardData.name;
@@ -130,7 +140,13 @@ function handleCardClick(cardData) {
 
 // Рендер карточки
 function renderCard(cardData) {
-  const cardElement = createCard(cardData, currentUserId, handleCardClick);
+  const cardElement = createCard(
+    cardData,
+    currentUserId,
+    handleCardClick,
+    handleDeleteCard,
+    handleLikeCard
+  );
   placesList.prepend(cardElement);
 }
 
@@ -148,8 +164,8 @@ function closeNewCardPopup() {
 
 function handleNewPlaceFormSubmit(evt) {
   evt.preventDefault();
-  const buttonSubmit = formNewPlace.querySelector(validationConfig.submitButtonSelector);
-  buttonSubmit.textContent = 'Сохранение...';
+  const submitButton = formNewPlace.querySelector(validationConfig.submitButtonSelector);
+  submitButton.textContent = 'Сохранение...';
 
   const newName = placeNameInput.value;
   const newLink = linkInput.value;
@@ -163,7 +179,7 @@ function handleNewPlaceFormSubmit(evt) {
       console.log('Ошибка при добавлении карточки:', err);
     })
     .finally(() => {
-      buttonSubmit.textContent = 'Сохранить';
+      submitButton.textContent = 'Сохранить';
     });
 }
 
@@ -171,7 +187,7 @@ addCardButton.addEventListener('click', openNewCardPopup);
 closeNewCardPopupButton.addEventListener('click', closeNewCardPopup);
 formNewPlace.addEventListener('submit', handleNewPlaceFormSubmit);
 
-// Закрытие полноразмерного изображения
+// Закрытие попапа с изображением
 function closeImagePopup() {
   closePopup(popupImage);
 }
